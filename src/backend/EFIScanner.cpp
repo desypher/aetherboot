@@ -35,7 +35,7 @@ QVector<BootEntry> EFIScanner::scanAllEFIs()
         for (const auto &part : children)
         {
             auto p = part.toObject();
-            QString mountpoint = p["mountpoints"].toArray().value(0).toString();
+            QString mountpoint = p["mountpoints"].toArray().at(0).toString();
             QString parttype = p["parttype"].toString();
 
             if (parttype.contains("c12a7328", Qt::CaseInsensitive) && !mountpoint.isEmpty())

@@ -2,24 +2,27 @@
 #include <QProcess>
 #include <QDebug>
 
-void BootHandler::bootWithEFIBootMgr(const QString &efiPath)
-{
-    QString bootNum = "0007"; // Custom boot entry ID
-    QString label = "AetherBoot Custom";
+#include "BootHandler.h"
 
-    QProcess::execute("efibootmgr", {"-c", "-d", "/dev/sda", "-p", "1", // adjust for correct ESP
+BootHandler::BootHandler(QObject *parent) : QObject(parent)
+{
+    // You can leave this empty or add initialization code here
+}
+
+void BootHandler::bootWithEFIBootMgr(const QString &efiPath, const QString &label)
+{
+    qDebug() << "Booting with efibootmgr:" << efiPath;
+    QProcess::execute("efibootmgr", {"-c", "-d", "/dev/sda", "-p", "1",
                                      "-L", label,
                                      "-l", efiPath});
-
-    QProcess::execute("efibootmgr", {"-n", bootNum}); // one-time boot
     QProcess::execute("reboot");
 }
 
 void BootHandler::bootWithKexec(const QString &kernelPath, const QString &initrdPath, const QString &cmdline)
 {
+    qDebug() << "Booting with kexec:" << kernelPath;
     QProcess::execute("kexec", {"-l", kernelPath,
                                 "--initrd=" + initrdPath,
                                 "--command-line=" + cmdline});
-
-    QProcess::execute("kexec", {"-e"}); // execute
+    QProcess::execute("kexec", {"-e"});
 }

@@ -1,5 +1,13 @@
 <RCC>
   <qresource prefix="/qml">
     <file>Main.qml</file>
+    <file>Theme.qml</file>
+    <file>icons/arch.svg</file>
+    <file>icons/debian.svg</file>
+    <file>icons/efi.svg</file>
+    <file>icons/fedora.svg</file>
+    <file>icons/linux.svg</file>
+    <file>icons/ubuntu.svg</file>
+    <file>icons/windows.svg</file>
   </qresource>
 </RCC>

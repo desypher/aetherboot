@@ -21,11 +21,17 @@ int main(int argc, char *argv[])
         bootEntries << item;
     }
 
+    // Register context properties
     engine.rootContext()->setContextProperty("bootEntries", bootEntries);
-    engine.rootContext()->setContextProperty("bootHandler", new BootHandler());
+
+    // Create BootHandler with app as parent (or nullptr)
+    BootHandler *bootHandler = new BootHandler(&app);
+    engine.rootContext()->setContextProperty("bootHandler", bootHandler);
+
     engine.load(QUrl(QStringLiteral("qrc:/qml/Main.qml")));
 
     if (engine.rootObjects().isEmpty())
         return -1;
+
     return app.exec();
 }

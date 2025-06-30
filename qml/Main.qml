@@ -1,13 +1,14 @@
 import QtQuick 6.5
 import QtQuick.Controls
 import QtQuick.Layouts
+import "." as Theme
 
 ApplicationWindow {
     visible: true
     width: 800
     height: 480
     title: "AetherBoot"
-    color: "#101010"
+    color: Theme.Theme.background
 
     ColumnLayout {
         anchors.centerIn: parent
@@ -15,41 +16,62 @@ ApplicationWindow {
 
         Text {
             text: "AetherBoot"
-            font.pixelSize: 32
-            color: "white"
+            font.pixelSize: Theme.Theme.fontSizeTitle
+            color: Theme.Theme.text
             Layout.alignment: Qt.AlignHCenter
         }
 
         ListView {
-            width: 600
-            height: 300
+            width: 640
+            height: 320
             model: bootEntries
             delegate: Rectangle {
-                width: 600
-                height: 50
-                color: ListView.isCurrentItem ? "#444" : "#222"
-                border.color: "#888"
-                radius: 8
+                width: 640
+                height: Theme.Theme.itemHeight
+                color: ListView.isCurrentItem ? Theme.Theme.highlight : Theme.Theme.surface
+                radius: Theme.Theme.borderRadius
+                border.color: Theme.Theme.textSecondary
 
-                Column {
-                    anchors.centerIn: parent
-                    spacing: 2
-                    Text { text: model.name; color: "white"; font.pixelSize: 18 }
-                    Text { text: model.device; color: "#aaa"; font.pixelSize: 12 }
+                RowLayout {
+                    anchors.fill: parent
+                    spacing: 12
+                    padding: 8
+
+                    Image {
+                        source: Theme.Theme.osIcons[model.name] || Theme.Theme.osIcons["Unknown"]
+                        width: 32; height: 32
+                        fillMode: Image.PreserveAspectFit
+                        color: Theme.Theme.text   // <-- tint the SVG icon white
+                    }
+
+                    ColumnLayout {
+                        Layout.fillWidth: true
+
+                        Text {
+                            text: model.name
+                            font.pixelSize: Theme.Theme.fontSizeName
+                            color: Theme.Theme.text
+                        }
+                        Text {
+                            text: model.device
+                            font.pixelSize: Theme.Theme.fontSizeDevice
+                            color: Theme.Theme.textSecondary
+                        }
+                    }
                 }
 
                 MouseArea {
                     anchors.fill: parent
                     onClicked: {
                         console.log("Selected:", model.path)
-                        // TODO: trigger EFI launch here
+                        bootHandler.boot(model.path)
                     }
                 }
             }
             focus: true
             Keys.onReturnPressed: {
                 console.log("Booting:", model.path)
-                // TODO: integrate boot handler
+                bootHandler.boot(model.path)
             }
         }
     }

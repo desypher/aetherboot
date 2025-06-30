@@ -18,6 +18,33 @@ mkdir -p "$ESP_DIR/EFI/BOOT"
 # Create cmdline file
 echo "quiet splash root=/dev/ram0 init=/init loglevel=3" > "$CMDLINE_FILE"
 
+echo "[+] Building initramfs for AetherBoot..."
+mkdir -p initramfs/{bin,sbin,etc,proc,sys,dev,tmp,usr/share/fonts}
+
+# Copy files
+cp aetherboot initramfs/
+cp busybox initramfs/bin/
+cp init initramfs/init
+chmod +x initramfs/init
+
+# Symlink essential BusyBox commands
+for cmd in sh mount mkdir echo; do
+  ln -s /bin/busybox initramfs/bin/$cmd
+done
+
+# Qt and system libs (adjust paths as needed)
+mkdir -p initramfs/lib
+cp /usr/lib/libQt6*.so* initramfs/lib/ || echo "Qt libs missing!"
+cp /usr/lib/libc.so* initramfs/lib/ || echo "libc missing!"
+
+# Fonts (optional but recommended for text rendering)
+cp -r /usr/share/fonts initramfs/usr/share/ || echo "Fonts not found!"
+
+# Create compressed initramfs
+cd initramfs
+find . -print0 | cpio --null -ov --format=newc | gzip -9 > ../initramfs/initramfs.img
+cd ..
+
 # Create combined EFI binary with stub, kernel, and initramfs
 objcopy \
     --add-section .osrel=/etc/os-release \
