@@ -52,10 +52,6 @@
   <circle cx="85" cy="85" r="0.8" fill="#FFFFFF" opacity="0.4">
     <animate attributeName="opacity" values="0.4;0.8;0.4" dur="5s" repeatCount="indefinite"/>
   </circle>
-  <text x="135" y="45" font-family="Arial, sans-serif" font-size="28" font-weight="bold" fill="url(#aetherGradient)" filter="url(#glow)">Aether</text>
-  <text x="135" y="75" font-family="Arial, sans-serif" font-size="24" font-weight="normal" fill="url(#bootGradient)" opacity="0.9">Boot</text>
-  <path d="M 110 35 Q 120 40 130 42" fill="none" stroke="url(#aetherGradient)" stroke-width="1" opacity="0.3"/>
-  <path d="M 110 65 Q 120 70 130 72" fill="none" stroke="url(#bootGradient)" stroke-width="1" opacity="0.3"/>
 </svg>
 
 > 🚀 A modern graphical UEFI boot manager for Arch Linux and other operating systems
