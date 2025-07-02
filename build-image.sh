@@ -18,7 +18,7 @@ error()  { echo -e "${RED}[✗]" "$@" "${RESET}"; }
 EFI_STUB="/usr/lib/systemd/boot/efi/linuxx64.efi.stub"
 KERNEL_IMAGE="/boot/vmlinuz-linux"
 INIT_SCRIPT="./init"
-BUSYBOX="./busybox"
+BUSYBOX="/usr/bin/busybox"
 BOOTLOADER="./build/aetherboot"
 OUTPUT_IMG="aetherboot.img"
 INITRAMFS_IMG="initramfs.img"
