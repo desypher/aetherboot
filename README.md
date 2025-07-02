@@ -5,6 +5,76 @@
 [![Language](https://img.shields.io/badge/Language-C%2B%2B20-orange.svg)](https://isocpp.org/)
 [![Framework](https://img.shields.io/badge/Framework-Qt6%2FQML-green.svg)](https://www.qt.io/)
 [![Arch Linux](https://img.shields.io/badge/Built%20for-Arch%20Linux-1793d1.svg)](https://archlinux.org/)
+![aetherboot_logo](https://github.com/user-attachments/assets/30b76030-798e-4551-b2b7-3da594697ddb)
+<svg viewBox="0 0 300 120" xmlns="http://www.w3.org/2000/svg">
+  <defs>
+    <linearGradient id="aetherGradient" x1="0%" y1="0%" x2="100%" y2="100%">
+      <stop offset="0%" style="stop-color:#4F46E5;stop-opacity:1" />
+      <stop offset="50%" style="stop-color:#7C3AED;stop-opacity:1" />
+      <stop offset="100%" style="stop-color:#EC4899;stop-opacity:1" />
+    </linearGradient>
+    
+    <linearGradient id="bootGradient" x1="0%" y1="0%" x2="100%" y2="0%">
+      <stop offset="0%" style="stop-color:#10B981;stop-opacity:1" />
+      <stop offset="100%" style="stop-color:#06B6D4;stop-opacity:1" />
+    </linearGradient>
+    
+    <filter id="glow">
+      <feGaussianBlur stdDeviation="3" result="coloredBlur"/>
+      <feMerge> 
+        <feMergeNode in="coloredBlur"/>
+        <feMergeNode in="SourceGraphic"/>
+      </feMerge>
+    </filter>
+    
+    <radialGradient id="starGlow" cx="50%" cy="50%" r="50%">
+      <stop offset="0%" style="stop-color:#FFFFFF;stop-opacity:0.8" />
+      <stop offset="100%" style="stop-color:#FFFFFF;stop-opacity:0" />
+    </radialGradient>
+  </defs>
+  
+  <!-- Background circle representing cosmic space -->
+  <circle cx="60" cy="60" r="45" fill="url(#aetherGradient)" opacity="0.1" stroke="url(#aetherGradient)" stroke-width="1" fill-opacity="0.05"/>
+  
+  <!-- Central boot/power symbol -->
+  <g transform="translate(60,60)">
+    <!-- Power symbol circle -->
+    <circle cx="0" cy="0" r="18" fill="none" stroke="url(#bootGradient)" stroke-width="3" opacity="0.8"/>
+    <!-- Power symbol line -->
+    <line x1="0" y1="-25" x2="0" y2="-8" stroke="url(#bootGradient)" stroke-width="3" stroke-linecap="round"/>
+    
+    <!-- Orbital rings -->
+    <circle cx="0" cy="0" r="28" fill="none" stroke="url(#aetherGradient)" stroke-width="1.5" opacity="0.4" stroke-dasharray="4,4">
+      <animateTransform attributeName="transform" attributeType="XML" type="rotate" from="0" to="360" dur="20s" repeatCount="indefinite"/>
+    </circle>
+    
+    <circle cx="0" cy="0" r="35" fill="none" stroke="url(#aetherGradient)" stroke-width="1" opacity="0.3" stroke-dasharray="2,6">
+      <animateTransform attributeName="transform" attributeType="XML" type="rotate" from="360" to="0" dur="30s" repeatCount="indefinite"/>
+    </circle>
+  </g>
+  
+  <!-- Floating particles/stars -->
+  <circle cx="25" cy="25" r="1.5" fill="#FFFFFF" opacity="0.7">
+    <animate attributeName="opacity" values="0.7;0.3;0.7" dur="3s" repeatCount="indefinite"/>
+  </circle>
+  <circle cx="90" cy="30" r="1" fill="#FFFFFF" opacity="0.5">
+    <animate attributeName="opacity" values="0.5;0.9;0.5" dur="4s" repeatCount="indefinite"/>
+  </circle>
+  <circle cx="35" cy="90" r="1.2" fill="#FFFFFF" opacity="0.6">
+    <animate attributeName="opacity" values="0.6;0.2;0.6" dur="2.5s" repeatCount="indefinite"/>
+  </circle>
+  <circle cx="85" cy="85" r="0.8" fill="#FFFFFF" opacity="0.4">
+    <animate attributeName="opacity" values="0.4;0.8;0.4" dur="5s" repeatCount="indefinite"/>
+  </circle>
+  
+  <!-- Text -->
+  <text x="135" y="45" font-family="Arial, sans-serif" font-size="28" font-weight="bold" fill="url(#aetherGradient)" filter="url(#glow)">Aether</text>
+  <text x="135" y="75" font-family="Arial, sans-serif" font-size="24" font-weight="normal" fill="url(#bootGradient)" opacity="0.9">Boot</text>
+  
+  <!-- Subtle connection lines -->
+  <path d="M 110 35 Q 120 40 130 42" fill="none" stroke="url(#aetherGradient)" stroke-width="1" opacity="0.3"/>
+  <path d="M 110 65 Q 120 70 130 72" fill="none" stroke="url(#bootGradient)" stroke-width="1" opacity="0.3"/>
+</svg>
 
 > 🚀 A modern graphical UEFI boot manager for Arch Linux and other operating systems
 
