@@ -66,8 +66,6 @@ AetherBoot is not production ready and you should not install this on your machi
 
 ---
 
----
-
 ## 📝 Features
 
 - Add Mouse Support
@@ -75,8 +73,6 @@ AetherBoot is not production ready and you should not install this on your machi
 - General cleanup
 - Improvements
 - Responsiveness
-
----
 
 ---
 
