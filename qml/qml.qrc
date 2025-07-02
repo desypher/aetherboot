@@ -2,12 +2,13 @@
   <qresource prefix="/qml">
     <file>Theme.qml</file>
     <file>Main.qml</file>
-    <file>icons/arch.svg</file>
-    <file>icons/debian.svg</file>
-    <file>icons/efi.svg</file>
-    <file>icons/fedora.svg</file>
-    <file>icons/linux.svg</file>
-    <file>icons/ubuntu.svg</file>
-    <file>icons/windows.svg</file>
+    <file>icons/arch.png</file>
+    <file>icons/debian.png</file>
+    <file>icons/efi.png</file>
+    <file>icons/fedora.png</file>
+    <file>icons/linux.png</file>
+    <file>icons/ubuntu.png</file>
+    <file>icons/windows.png</file>
+    <file>icons/aetherboot.png</file>
   </qresource>
 </RCC>

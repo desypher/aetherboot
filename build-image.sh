@@ -14,6 +14,13 @@ success(){ echo -e "${GREEN}[✓]" "$@" "${RESET}"; }
 warn()   { echo -e "${YELLOW}[!]" "$@" "${RESET}"; }
 error()  { echo -e "${RED}[✗]" "$@" "${RESET}"; }
 
+# Configuration
+TEST_DIR="efi_test_env"
+MAIN_DISK="main_system.img"
+EXTRA_DISK1="extra_efi1.img" 
+EXTRA_DISK2="extra_efi2.img"
+USB_DISK="usb_efi.img"
+
 # Paths
 EFI_STUB="/usr/lib/systemd/boot/efi/linuxx64.efi.stub"
 KERNEL_IMAGE="/boot/vmlinuz-linux"
@@ -38,6 +45,35 @@ done
 
 info "Preparing initramfs directory structure..."
 mkdir -p initramfs/{bin,dev,proc,sys,tmp,lib,usr/share/fonts/truetype/dejavu,lib64,usr/lib,usr/lib/qt6/plugins/platforms,usr/lib/qt6/qml/QtQuick/Controls/Basic,usr/lib/qt6/qml/QtQuick/Controls/Fusion/impl,usr/lib/qt6/qml/QtQuick/Layouts,usr/lib/qt6/qml/QtQuick,usr/share/X11}
+
+info "Copying kernel modules for vfat/fat support..."
+
+KMODDIR="/lib/modules/6.15.4-arch2-1"
+mkdir -p initramfs/lib/
+
+# Copy modules
+cp "$KMODDIR/kernel/fs/fat/fat.ko.zst" initramfs/lib/ || cp "$KMODDIR/kernel/fs/fat/fat.ko" initramfs/lib/
+cp "$KMODDIR/kernel/fs/fat/vfat.ko.zst" initramfs/lib/ || cp "$KMODDIR/kernel/fs/fat/vfat.ko" initramfs/lib/
+cp "$KMODDIR/kernel/fs/nls/nls_iso8859-1.ko.zst" initramfs/lib/ || cp "$KMODDIR/kernel/fs/nls/nls_iso8859-1.ko" initramfs/lib/
+
+zstd -d initramfs/lib/fat.ko.zst -o initramfs/lib/fat.ko
+zstd -d initramfs/lib/vfat.ko.zst -o initramfs/lib/vfat.ko
+zstd -d initramfs/lib/nls_iso8859-1.ko.zst -o initramfs/lib/nls_iso8859-1.ko
+
+rm initramfs/lib/*.ko.zst
+
+info "Creating symbolic links for busybox commands..."
+for cmd in sh mount mkdir echo ls find cat ...; do
+  ln -sf busybox "initramfs/bin/$cmd"
+done
+
+info "Copying lsblk utility..."
+cp /usr/bin/lsblk initramfs/bin/
+ldd /usr/bin/lsblk | awk '{print $3}' | grep -E '^/' | while read -r lib; do
+  dest="initramfs${lib}"
+  mkdir -p "$(dirname "$dest")"
+  cp -v "$lib" "$dest"
+done
 
 info "Copying core files..."
 cp "$INIT_SCRIPT" initramfs/init && chmod +x initramfs/init || { error "Failed to make init executable"; exit 1; }
@@ -64,6 +100,15 @@ if [[ -d /usr/share/X11/xkb ]]; then
 else
   warn "/usr/share/X11/xkb not found on host"
 fi
+
+info "Copying QtQuick Effects plugin and dependencies..."
+mkdir -p initramfs/usr/lib/qt6/qml/QtQuick/Effects
+cp /usr/lib/qt6/qml/QtQuick/Effects/libeffectsplugin.so initramfs/usr/lib/qt6/qml/QtQuick/Effects/
+ldd /usr/lib/qt6/qml/QtQuick/Effects/libeffectsplugin.so | awk '{print $3}' | grep -E '^/' | while read -r lib; do
+  dest="initramfs${lib}"
+  mkdir -p "$(dirname "$dest")"
+  cp -v "$lib" "$dest"
+done
 
 info "Copying QtQuick Layouts plugin and dependencies..."
 cp /usr/lib/qt6/qml/QtQuick/Layouts/libqquicklayoutsplugin.so initramfs/usr/lib/qt6/qml/QtQuick/Layouts/
@@ -166,7 +211,7 @@ cd - >/dev/null
 rm -rf "$TMPDIR"
 
 info "Writing kernel command line..."
-echo "quiet loglevel=3 init=/init console=ttyS0,115200n8 LANG=C.UTF-8 LC_ALL=C.UTF-8" > cmdline.txt
+echo "quiet init=/init console=ttyS0,115200n8 LANG=C.UTF-8 LC_ALL=C.UTF-8" > cmdline.txt
 
 info "Creating unified EFI binary..."
 objcopy \
@@ -177,7 +222,7 @@ objcopy \
   "$EFI_STUB" bootx64.efi
 
 info "Creating 256MB disk image..."
-dd if=/dev/zero of="$OUTPUT_IMG" bs=1M count=256 status=progress
+dd if=/dev/zero of="$OUTPUT_IMG" bs=1M count=160 status=progress
 
 info "Creating GPT partition table and EFI partition..."
 sgdisk -o "$OUTPUT_IMG"

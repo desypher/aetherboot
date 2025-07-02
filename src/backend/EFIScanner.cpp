@@ -10,7 +10,14 @@
 QVector<BootEntry> EFIScanner::scanAllEFIs()
 {
     QVector<BootEntry> entries;
-    const QStringList espPaths = {"/boot/efi/EFI", "/boot/EFI", "/EFI"};
+    QStringList espPaths = {"/boot/efi/EFI", "/boot/EFI", "/EFI"};
+
+    // Add dynamic efi mount points
+    QDir bootDir("/boot");
+    QStringList efiDirs = bootDir.entryList(QStringList() << "efi*", QDir::Dirs | QDir::NoDotAndDotDot);
+    for (const QString &efiDir : efiDirs) {
+        espPaths << "/boot/" + efiDir + "/EFI";
+    }
 
     for (const auto &path : espPaths)
     {

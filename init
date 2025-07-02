@@ -1,7 +1,40 @@
 #!/bin/sh
+echo "Loading kernel modules from /lib..."
+
+for mod in /lib/*.ko; do
+  echo "Inserting $mod..."
+  insmod "$mod" || echo "⚠️ Failed to load module: $mod"
+done
+
 mount -t devtmpfs none /dev
 mount -t proc none /proc
 mount -t sysfs none /sys
+
+sleep 1
+mkdir -p /boot
+
+echo "[*] All block devices:"
+lsblk -o NAME,PATH,TYPE,SIZE,PARTTYPE,MOUNTPOINT
+
+echo "[*] Attempting to mount all /dev/sd*1 partitions as EFI..."
+idx=1
+for dev in /dev/sd*1; do
+    [ -b "$dev" ] || continue
+    mnt="/boot/efi$idx"
+    echo "[*] Mounting $dev to $mnt"
+    mkdir -p "$mnt"
+    mount -t vfat "$dev" "$mnt" && echo "Mounted $dev to $mnt" || echo "Failed to mount $dev to $mnt"
+    idx=$((idx+1))
+done
+
+echo "[*] Mounted filesystems:"
+mount
+
+echo "[*] Listing EFI files:"
+find /boot/efi* -iname '*.efi' || echo "No EFI files found"
+
+echo "[*] EFI partitions found:"
+lsblk -o NAME,PARTTYPE -nr | awk '$2 ~ /c12a7328/ {print "/dev/" $1}'
 
 export QT_XKB_CONFIG_ROOT=/usr/lib/kbd/keymaps/xkb
 export QT_QPA_PLATFORM_PLUGIN_PATH=/usr/lib/qt/plugins/platforms
@@ -17,5 +50,3 @@ echo "[*] Starting Aetherboot..."
   echo "❌ Aetherboot crashed. Dropping to shell."
   exec sh
 }
-
-poweroff -f
