@@ -66,7 +66,7 @@ AetherBoot is not production ready and you should not install this on your machi
 
 ---
 
-## 📝 Features
+## 📝 TODO
 
 - Add Mouse Support
 - Reduce .img size
