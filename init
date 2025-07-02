@@ -1,0 +1,21 @@
+#!/bin/sh
+mount -t devtmpfs none /dev
+mount -t proc none /proc
+mount -t sysfs none /sys
+
+export QT_XKB_CONFIG_ROOT=/usr/lib/kbd/keymaps/xkb
+export QT_QPA_PLATFORM_PLUGIN_PATH=/usr/lib/qt/plugins/platforms
+export QT_QPA_PLATFORM=linuxfb:fb=/dev/fb0
+export QT_QPA_FONTDIR=/usr/share/fonts
+export HOME=/root
+export LANG=C.UTF-8
+export LANG=C.UTF-8
+export LC_ALL=C.UTF-8
+
+echo "[*] Starting Aetherboot..."
+/aetherboot || {
+  echo "❌ Aetherboot crashed. Dropping to shell."
+  exec sh
+}
+
+poweroff -f

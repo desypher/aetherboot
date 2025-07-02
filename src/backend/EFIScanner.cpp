@@ -5,6 +5,7 @@
 #include <QJsonDocument>
 #include <QJsonObject>
 #include <QJsonArray>
+#include <QDebug>
 
 QVector<BootEntry> EFIScanner::scanAllEFIs()
 {
@@ -17,6 +18,7 @@ QVector<BootEntry> EFIScanner::scanAllEFIs()
         while (it.hasNext())
         {
             QString fullPath = it.next();
+            qDebug() << "[STATIC] Found EFI:" << fullPath;
             entries.append(BootEntry(QFileInfo(fullPath).baseName(), fullPath, "Mounted ESP"));
         }
     }
@@ -40,10 +42,12 @@ QVector<BootEntry> EFIScanner::scanAllEFIs()
 
             if (parttype.contains("c12a7328", Qt::CaseInsensitive) && !mountpoint.isEmpty())
             {
+                qDebug() << "[LSBLK] Found EFI partition at:" << mountpoint;
                 QDirIterator it(mountpoint + "/EFI", QStringList() << "*.efi", QDir::Files, QDirIterator::Subdirectories);
                 while (it.hasNext())
                 {
                     QString fullPath = it.next();
+                    qDebug() << "[LSBLK] Found EFI:" << fullPath;
                     entries.append(BootEntry(QFileInfo(fullPath).baseName(), fullPath, mountpoint));
                 }
             }

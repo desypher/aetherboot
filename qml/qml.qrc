@@ -1,7 +1,7 @@
 <RCC>
   <qresource prefix="/qml">
-    <file>Main.qml</file>
     <file>Theme.qml</file>
+    <file>Main.qml</file>
     <file>icons/arch.svg</file>
     <file>icons/debian.svg</file>
     <file>icons/efi.svg</file>

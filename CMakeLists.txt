@@ -12,6 +12,7 @@ add_executable(aetherboot
     src/main.cpp
     src/backend/EFIScanner.cpp
     src/backend/BootEntry.cpp
+    src/backend/BootHandler.cpp
     qml/qml.qrc
 )
 

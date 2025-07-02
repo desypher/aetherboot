@@ -9,6 +9,10 @@ int main(int argc, char *argv[])
     QGuiApplication app(argc, argv);
     QQmlApplicationEngine engine;
 
+    // Register Theme singleton
+    qmlRegisterSingletonType(QUrl(QStringLiteral("qrc:/qml/Theme.qml")),
+                             "Theme", 1, 0, "Theme");
+
     // Get boot entries
     const auto entries = EFIScanner::scanAllEFIs();
     QVariantList bootEntries;
