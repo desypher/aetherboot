@@ -1,0 +1,59 @@
+# --- Build folders ---
+build/
+out/
+dist/
+bin/
+obj/
+
+# --- CMake, Make, QMake artifacts ---
+CMakeFiles/
+CMakeCache.txt
+Makefile
+cmake_install.cmake
+*.pro.user
+*.qmake.stash
+
+# --- Compiled binaries and object files ---
+*.o
+*.a
+*.so
+*.so.*
+*.dll
+*.exe
+*.dylib
+
+# --- EFI build output ---
+aetherboot.img
+bootx64.efi
+initramfs.img
+cmdline.txt
+
+# --- Qt resource compiler output ---
+*.rcc
+
+# --- Logs and debug files ---
+*.log
+*.stackdump
+*.core
+core.*
+
+# --- Temporary files ---
+*.tmp
+*.bak
+*.swp
+*.swo
+*.DS_Store
+
+# --- Editor/IDE specific ---
+.vscode/
+.idea/
+*.code-workspace
+
+# --- QEMU disk loop mounts ---
+*.qcow2
+*.vdi
+*.vmdk
+
+# --- Backup and test output ---
+test-output/
+test.log
