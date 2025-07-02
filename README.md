@@ -30,7 +30,7 @@ It features a sleek Qt6/QML interface, automatically scans all EFI System Partit
 ### Build
 
 ```bash
-git clone https://github.com/deypher/aetherboot.git
+git clone https://github.com/desypher/aetherboot.git
 cd aetherboot
 mkdir build && cd build
 cmake ..
