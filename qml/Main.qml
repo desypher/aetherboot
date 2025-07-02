@@ -76,8 +76,8 @@ ApplicationWindow {
             Image {
                 id: logoImage
                 source: Theme.logo
-                width: 720
-                height: 520
+                width: 520
+                height: 220
                 fillMode: Image.PreserveAspectFit
                 smooth: true
                 Layout.alignment: Qt.AlignHCenter
