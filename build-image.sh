@@ -46,9 +46,80 @@ done
 info "Preparing initramfs directory structure..."
 mkdir -p initramfs/{bin,dev,proc,sys,tmp,lib,usr/share/fonts/truetype/dejavu,lib64,usr/lib,usr/lib/qt6/plugins/platforms,usr/lib/qt6/qml/QtQuick/Controls/Basic,usr/lib/qt6/qml/QtQuick/Controls/Fusion/impl,usr/lib/qt6/qml/QtQuick/Layouts,usr/lib/qt6/qml/QtQuick,usr/share/X11}
 
-info "Copying kernel modules for vfat/fat support..."
-
+# ADD INPUT DRIVER MODULES HERE
+info "Copying input device kernel modules..."
 KMODDIR="/lib/modules/6.15.4-arch2-1"
+mkdir -p initramfs/lib/modules/6.15.4-arch2-1/kernel/drivers/{hid,input,usb}
+
+# First, let's see what's actually available
+info "Searching for input modules in $KMODDIR..."
+
+# Debug: Show what input-related modules exist
+info "Available input-related modules:"
+find "$KMODDIR" -name "*hid*.ko*" -o -name "*input*.ko*" -o -name "*usb*.ko*" | grep -E "(hid|input|keyboard|mouse|serio)" | sort | head -20
+
+# Define module search paths - these are the likely locations
+declare -A module_paths=(
+  ["usbhid"]="kernel/drivers/hid"
+  ["hid-generic"]="kernel/drivers/hid"
+  ["xhci_hcd"]="kernel/drivers/usb/host"
+  ["ehci_hcd"]="kernel/drivers/usb/host"
+  ["ohci_hcd"]="kernel/drivers/usb/host"
+  ["atkbd"]="kernel/drivers/input/keyboard"
+  ["psmouse"]="kernel/drivers/input/mouse"
+  ["i8042"]="kernel/drivers/input/serio"
+  ["evdev"]="kernel/drivers/input"
+)
+
+# Copy input modules
+for module in usbhid hid-generic xhci_hcd ehci_hcd ohci_hcd atkbd psmouse i8042 evdev; do
+  # Try specific path first
+  if [[ -n "${module_paths[$module]:-}" ]]; then
+    module_path="$KMODDIR/${module_paths[$module]}/${module}.ko.zst"
+    if [[ ! -f "$module_path" ]]; then
+      module_path="$KMODDIR/${module_paths[$module]}/${module}.ko"
+    fi
+  fi
+  
+  # If not found, search everywhere
+  if [[ ! -f "$module_path" ]]; then
+    module_path=$(find "$KMODDIR" -name "${module}.ko*" -type f | head -1)
+  fi
+  
+  if [[ -f "$module_path" ]]; then
+    cp "$module_path" initramfs/lib/
+    if [[ "$module_path" == *.zst ]]; then
+      zstd -d "initramfs/lib/$(basename "$module_path")" -o "initramfs/lib/${module}.ko"
+      rm "initramfs/lib/$(basename "$module_path")"
+    fi
+    success "Copied $module from $(basename "$(dirname "$module_path")")"
+  else
+    warn "$module not found - searching with modinfo..."
+    # Try to find with modinfo (if available)
+    if command -v modinfo >/dev/null 2>&1; then
+      modinfo_path=$(modinfo -n "$module" 2>/dev/null | head -1)
+      if [[ -f "$modinfo_path" ]]; then
+        cp "$modinfo_path" initramfs/lib/
+        if [[ "$modinfo_path" == *.zst ]]; then
+          zstd -d "initramfs/lib/$(basename "$modinfo_path")" -o "initramfs/lib/${module}.ko"
+          rm "initramfs/lib/$(basename "$modinfo_path")"
+        fi
+        success "Copied $module via modinfo"
+      else
+        error "$module not found anywhere"
+      fi
+    else
+      error "$module not found and modinfo not available"
+    fi
+  fi
+done
+
+# Copy module dependency files
+cp "$KMODDIR/modules.dep" initramfs/lib/modules/6.15.4-arch2-1/
+cp "$KMODDIR/modules.dep.bin" initramfs/lib/modules/6.15.4-arch2-1/
+cp "$KMODDIR/modules.alias" initramfs/lib/modules/6.15.4-arch2-1/
+
+info "Copying kernel modules for vfat/fat support..."
 mkdir -p initramfs/lib/
 
 # Copy modules
@@ -63,7 +134,7 @@ zstd -d initramfs/lib/nls_iso8859-1.ko.zst -o initramfs/lib/nls_iso8859-1.ko
 rm initramfs/lib/*.ko.zst
 
 info "Creating symbolic links for busybox commands..."
-for cmd in sh mount mkdir echo ls find cat ...; do
+for cmd in sh mount mkdir echo ls find cat modprobe insmod; do
   ln -sf busybox "initramfs/bin/$cmd"
 done
 
@@ -91,6 +162,31 @@ if [[ ! -e initramfs/dev/fb0 ]]; then
   sudo mknod -m 0666 initramfs/dev/fb0 c 29 0
   success "Created /dev/fb0 node"
 fi
+
+info "Creating input device nodes..."
+mkdir -p initramfs/dev/input
+
+if [[ ! -e initramfs/dev/input/event0 ]]; then
+  sudo mknod -m 0600 initramfs/dev/input/event0 c 13 64
+  success "Created /dev/input/event0 node (keyboard)"
+fi
+
+if [[ ! -e initramfs/dev/input/event1 ]]; then
+  sudo mknod -m 0600 initramfs/dev/input/event1 c 13 65
+  success "Created /dev/input/event1 node (mouse)"
+fi
+
+if [[ ! -e initramfs/dev/input/mice ]]; then
+  sudo mknod -m 0600 initramfs/dev/input/mice c 13 63
+  success "Created /dev/input/mice node"
+fi
+
+# Add more input event nodes (some systems may need them)
+for i in {2..9}; do
+  if [[ ! -e initramfs/dev/input/event$i ]]; then
+    sudo mknod -m 0600 initramfs/dev/input/event$i c 13 $((64 + i))
+  fi
+done
 
 info "Copying keyboard layouts..."
 if [[ -d /usr/share/X11/xkb ]]; then
@@ -129,6 +225,62 @@ ldd /usr/lib/qt6/qml/QtQuick/Controls/Fusion/impl/libqtquickcontrols2fusionstyle
 done
 cp /usr/lib/qt6/qml/QtQuick/Controls/Fusion/libqtquickcontrols2fusionstyleplugin.so initramfs/usr/lib/qt6/qml/QtQuick/Controls/Fusion/
 cp /usr/lib/libQt6QuickControls2Fusion.so.6 initramfs/usr/lib/
+mkdir -p initramfs/usr/lib/qt6/plugins/generic/
+mkdir -p initramfs/usr/lib/
+
+# List of plugins to copy
+inputPlugins=(
+  libqevdevkeyboardplugin.so
+  libqevdevmouseplugin.so
+  libqevdevtabletplugin.so
+  libqevdevtouchplugin.so
+  libqlibinputplugin.so
+  libqtslibplugin.so
+  libqtuiotouchplugin.so
+)
+
+# Source and destination paths
+src_dir="/usr/lib/qt6/plugins/generic"
+dst_dir="initramfs/usr/lib/qt6/plugins/generic"
+lib_dst="initramfs/usr/lib"
+
+info "Copying input plugins..."
+for plugin in "${inputPlugins[@]}"; do
+  plugin_src="$src_dir/$plugin"
+  plugin_dst="$dst_dir/$plugin"
+
+  if [[ -f "$plugin_src" ]]; then
+    cp "$plugin_src" "$plugin_dst"
+    echo "Copied $plugin"
+
+    # Get dependencies via ldd and copy them
+    echo "  ↳ Finding dependencies for $plugin..."
+    ldd "$plugin_src" | grep "=> /" | awk '{print $3}' | while read -r lib; do
+      if [[ -f "$lib" ]]; then
+        lib_basename=$(basename "$lib")
+        lib_realpath=$(realpath "$lib")
+        lib_target="$lib_dst/$lib_basename"
+
+        # Copy actual library file
+        if [[ ! -f "$lib_dst/$(basename "$lib_realpath")" ]]; then
+          cp "$lib_realpath" "$lib_dst/"
+          echo "    • Copied $(basename "$lib_realpath")"
+        fi
+      fi
+    done
+
+  else
+    echo "Warning: $plugin not found in $src_dir"
+  fi
+done
+
+ldd /usr/lib/qt6/plugins/generic/libqlibinputplugin.so | awk '{print $3}' | grep -E '^/' | while read -r lib; do
+  dest="initramfs${lib}"
+  mkdir -p "$(dirname "$dest")"
+  cp -u "$lib" "$dest"
+done
+
+success "Input plugins and their dependencies copied."
 
 info "Copying essential libraries..."
 cp /lib64/ld-linux-x86-64.so.2 initramfs/lib64/
@@ -222,7 +374,7 @@ objcopy \
   "$EFI_STUB" bootx64.efi
 
 info "Creating 256MB disk image..."
-dd if=/dev/zero of="$OUTPUT_IMG" bs=1M count=160 status=progress
+dd if=/dev/zero of="$OUTPUT_IMG" bs=1M count=180 status=progress
 
 info "Creating GPT partition table and EFI partition..."
 sgdisk -o "$OUTPUT_IMG"

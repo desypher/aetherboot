@@ -36,6 +36,20 @@ find /boot/efi* -iname '*.efi' || echo "No EFI files found"
 echo "[*] EFI partitions found:"
 lsblk -o NAME,PARTTYPE -nr | awk '$2 ~ /c12a7328/ {print "/dev/" $1}'
 
+# Load input device modules
+echo "Loading input drivers..."
+modprobe usbhid
+modprobe hid-generic
+modprobe xhci_hcd
+modprobe ehci_hcd
+modprobe evdev
+modprobe atkbd
+modprobe psmouse
+modprobe i8042
+
+export QT_QPA_EVDEV_KEYBOARD_PARAMETERS=/dev/input/event0
+export QT_QPA_EVDEV_MOUSE_PARAMETERS=/dev/input/event1
+export QT_QPA_GENERIC_PLUGINS=libinput
 export QT_XKB_CONFIG_ROOT=/usr/lib/kbd/keymaps/xkb
 export QT_QPA_PLATFORM_PLUGIN_PATH=/usr/lib/qt/plugins/platforms
 export QT_QPA_PLATFORM=linuxfb:fb=/dev/fb0
